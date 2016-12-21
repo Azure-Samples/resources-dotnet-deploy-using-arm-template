@@ -7,7 +7,7 @@
 
   <Import Project="$(VSToolsPath)\DotNet\Microsoft.DotNet.Props" Condition="'$(VSToolsPath)' != ''" />
   <PropertyGroup Label="Globals">
-    <ProjectGuid>6e22f69a-01fc-4c64-a319-31918f71272e</ProjectGuid>
+    <ProjectGuid>9783444b-ccfc-42ae-ac8e-0b5bbff4394f</ProjectGuid>
     <RootNamespace>DeployUsingARMTemplate</RootNamespace>
     <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)'=='' ">.\obj</BaseIntermediateOutputPath>
     <OutputPath Condition="'$(OutputPath)'=='' ">.\bin\</OutputPath>
