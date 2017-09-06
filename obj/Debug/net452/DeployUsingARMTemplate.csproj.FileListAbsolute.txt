@@ -1,4 +1,0 @@
-C:\Sources\dotnet-samples\resources-dotnet-deploy-using-arm-template\bin\Debug\net452\DeployUsingARMTemplate.runtimeconfig.json
-C:\Sources\dotnet-samples\resources-dotnet-deploy-using-arm-template\bin\Debug\net452\DeployUsingARMTemplate.runtimeconfig.dev.json
-C:\Sources\dotnet-samples\resources-dotnet-deploy-using-arm-template\obj\Debug\net452\DeployUsingARMTemplate.csproj.DeployUsingARMTemplate.exe.config
-C:\Sources\dotnet-samples\resources-dotnet-deploy-using-arm-template\obj\Debug\net452\DeployUsingARMTemplate.csproj.CoreCompileInputs.cache

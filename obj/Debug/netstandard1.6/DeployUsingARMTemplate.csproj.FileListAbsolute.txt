@@ -1,2 +1,0 @@
-C:\Sources\dotnet-samples\resources-dotnet-deploy-using-arm-template\bin\Debug\netstandard1.6\DeployUsingARMTemplate.deps.json
-C:\Sources\dotnet-samples\resources-dotnet-deploy-using-arm-template\obj\Debug\netstandard1.6\DeployUsingARMTemplate.csproj.CoreCompileInputs.cache

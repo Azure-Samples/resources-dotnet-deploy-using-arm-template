@@ -4,7 +4,7 @@ platforms: .Net
 author: alvadb
 ---
 
-# Getting Started with Resources - Deploy Using A R M Template - in .Net #
+# Getting Started with Resources - Deploy Using ARM Template - in .Net #
 
           Azure Resource sample for deploying resources using an ARM template.
 
