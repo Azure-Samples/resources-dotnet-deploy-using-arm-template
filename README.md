@@ -1,7 +1,9 @@
 ---
 page_type: sample
-languages: java
-products: azure
+languages:
+- java
+products:
+- azure
 services: Resource-Manager
 platforms: dotnet
 author: yaohaizh
@@ -21,9 +23,9 @@ Set the environment variable `AZURE_AUTH_LOCATION` with the full path for an aut
     git clone https://github.com/Azure-Samples/resources-dotnet-deploy-using-arm-template.git
 
     cd resources-dotnet-deploy-using-arm-template
-  
+
     dotnet build
-    
+
     bin\Debug\net452\DeployUsingARMTemplate.exe
 
 ## More information ##
