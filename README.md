@@ -4,7 +4,7 @@ languages:
 - csharp
 products:
 - azure
-extentions:
+extensions:
 - services: Resource-Manager
 - platforms: dotnet
 ---
