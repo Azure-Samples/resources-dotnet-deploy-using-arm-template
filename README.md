@@ -11,7 +11,7 @@ extensions:
 
 # Getting started on deploying using an ARM template in C# #
 
-          Azure Resource sample for deploying resources using an ARM template.
+ Azure Resource sample for deploying resources using an ARM template.
 
 
 ## Running this Sample ##
