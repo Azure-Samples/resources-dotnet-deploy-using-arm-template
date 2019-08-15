@@ -4,9 +4,9 @@ languages:
 - csharp
 products:
 - azure
-services: Resource-Manager
-platforms: dotnet
-author: yaohaizh
+extentions:
+- services: Resource-Manager
+- platforms: dotnet
 ---
 
 # Getting started on deploying using an ARM template in C# #
