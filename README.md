@@ -5,8 +5,8 @@ languages:
 products:
 - azure
 extensions:
-- services: Resource-Manager
-- platforms: dotnet
+  services: Resource-Manager
+  platforms: dotnet
 ---
 
 # Getting started on deploying using an ARM template in C# #
