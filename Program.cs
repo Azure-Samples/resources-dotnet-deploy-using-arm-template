@@ -49,10 +49,22 @@ namespace DeployUsingARMTemplate
                     Template = BinaryData.FromString(templateContent),
                     Parameters = BinaryData.FromObjectAsJson(new
                     {
-                        hostingPlanName = hostingPlanName,
-                        webSiteName = webAppName,
-                        skuName = "B1",
-                        skuCapacity = 1,
+                        hostingPlanName = new
+                        {
+                            value = hostingPlanName
+                        },
+                        webSiteName = new
+                        {
+                            value = webAppName
+                        },
+                        skuName = new
+                        {
+                            value = "B1"
+                        },
+                        skuCapacity = new
+                        {
+                            value = 1
+                        },
                     })
                 });
                 var deploymentLro = await resourceGroup.GetArmDeployments().CreateOrUpdateAsync(WaitUntil.Completed, deploymentName, deploymentContent);
@@ -85,7 +97,15 @@ namespace DeployUsingARMTemplate
                 // Authenticate
                 var credential = new DefaultAzureCredential();
 
-                var client = new ArmClient(credential);
+                var subscriptionId = Environment.GetEnvironmentVariable("AZURE_SUBSCRIPTION_ID");
+                var client = new ArmClient(credential, subscriptionId, new ArmClientOptions()
+                {
+                    Diagnostics =
+                    {
+                        IsLoggingEnabled = true,
+                        IsLoggingContentEnabled = true,
+                    }
+                });
 
                 await RunSample(client);
             }
