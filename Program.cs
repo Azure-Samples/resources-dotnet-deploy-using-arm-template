@@ -7,7 +7,6 @@ using Azure.Identity;
 using Azure.ResourceManager;
 using Azure.ResourceManager.Resources;
 using Azure.ResourceManager.Resources.Models;
-using Microsoft.Azure.Management.Samples.Common;
 
 namespace DeployUsingARMTemplate
 {
@@ -20,30 +19,32 @@ namespace DeployUsingARMTemplate
          */
         public static async Task RunSample(ArmClient client)
         {
-            var rgName = "rgRSAT";
-            var deploymentName = "dpRSAT";
+            var rgName = "rgRSAT"; // change the value here for your own resource group name
+            var deploymentName = "dpRSAT"; // change the value here for your own arm deployment name
             try
             {
                 //=============================================================
                 // Create resource group.
-                Utilities.Log("Creating a resource group with name: " + rgName);
+                Console.WriteLine($"Creating a resource group with name: {rgName}");
 
                 var subscription = await client.GetDefaultSubscriptionAsync();
                 var rgLro = await subscription.GetResourceGroups().CreateOrUpdateAsync(WaitUntil.Completed, rgName, new ResourceGroupData(AzureLocation.WestUS));
-
                 var resourceGroup = rgLro.Value;
                 _resourceGroupId = resourceGroup.Id;
 
-                Utilities.Log("Created a resource group with name: " + rgName);
+                Console.WriteLine($"Created a resource group: {_resourceGroupId}");
                 //=============================================================
                 // Create a deployment for an Azure App Service via an ARM
                 // template.
 
-                Utilities.Log("Starting a deployment for an Azure App Service: " + deploymentName);
+                Console.WriteLine($"Starting a deployment for an Azure App Service: {deploymentName}");
 
-                var templateContent = File.ReadAllText(Path.Combine(Utilities.ProjectPath, "Asset", "ArmTemplate.json")).TrimEnd();
+                // tweak the values here to customize your web app
                 var hostingPlanName = "hpRSAT";
                 var webAppName = "wnRSAT";
+                var webSkuName = "B1";
+                var webSkuCapacity = 1;
+                var templateContent = File.ReadAllText(Path.Combine(".", "Asset", "ArmTemplate.json")).TrimEnd();
                 var deploymentContent = new ArmDeploymentContent(new ArmDeploymentProperties(ArmDeploymentMode.Incremental)
                 {
                     Template = BinaryData.FromString(templateContent),
@@ -59,17 +60,18 @@ namespace DeployUsingARMTemplate
                         },
                         skuName = new
                         {
-                            value = "B1"
+                            value = webSkuName
                         },
                         skuCapacity = new
                         {
-                            value = 1
+                            value = webSkuCapacity
                         },
                     })
                 });
-                var deploymentLro = await resourceGroup.GetArmDeployments().CreateOrUpdateAsync(WaitUntil.Completed, deploymentName, deploymentContent);
+                // we do not need the response of this deployment, therefore we just wait the deployment to complete here and discard the response.
+                await resourceGroup.GetArmDeployments().CreateOrUpdateAsync(WaitUntil.Completed, deploymentName, deploymentContent);
 
-                Utilities.Log("Completed the deployment: " + deploymentName);
+                Console.WriteLine($"Completed the deployment: {deploymentName}");
             }
             finally
             {
@@ -77,14 +79,14 @@ namespace DeployUsingARMTemplate
                 {
                     if (_resourceGroupId is not null)
                     {
-                        Utilities.Log("Deleting Resource Group: " + rgName);
+                        Console.WriteLine($"Deleting Resource Group: {_resourceGroupId}");
                         await client.GetResourceGroupResource(_resourceGroupId).DeleteAsync(WaitUntil.Completed);
-                        Utilities.Log("Deleted Resource Group: " + rgName);
+                        Console.WriteLine($"Deleted Resource Group: {_resourceGroupId}");
                     }
                 }
                 catch (Exception ex)
                 {
-                    Utilities.Log(ex);
+                    Console.WriteLine(ex);
                 }
             }
         }
@@ -98,20 +100,14 @@ namespace DeployUsingARMTemplate
                 var credential = new DefaultAzureCredential();
 
                 var subscriptionId = Environment.GetEnvironmentVariable("AZURE_SUBSCRIPTION_ID");
-                var client = new ArmClient(credential, subscriptionId, new ArmClientOptions()
-                {
-                    Diagnostics =
-                    {
-                        IsLoggingEnabled = true,
-                        IsLoggingContentEnabled = true,
-                    }
-                });
+                // you can also use `new ArmClient(credential)` here, and the default subscription will be the first subscription in your list of subscription
+                var client = new ArmClient(credential, subscriptionId);
 
                 await RunSample(client);
             }
             catch (Exception ex)
             {
-                Utilities.Log(ex);
+                Console.WriteLine(ex);
             }
         }
     }
