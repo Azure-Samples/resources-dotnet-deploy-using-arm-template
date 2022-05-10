@@ -1,90 +1,113 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
-using Microsoft.Azure.Management.Fluent;
-using Microsoft.Azure.Management.ResourceManager.Fluent;
-using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
-using Microsoft.Azure.Management.ResourceManager.Fluent.Models;
-using Microsoft.Azure.Management.Samples.Common;
-using Newtonsoft.Json.Linq;
-using System;
+using Azure;
+using Azure.Core;
+using Azure.Identity;
+using Azure.ResourceManager;
+using Azure.ResourceManager.Resources;
+using Azure.ResourceManager.Resources.Models;
 
 namespace DeployUsingARMTemplate
 {
     public class Program
     {
+        private static ResourceIdentifier? _resourceGroupId = null;
+
         /**
          * Azure Resource sample for deploying resources using an ARM template.
          */
-        public static void RunSample(IAzure azure)
+        public static async Task RunSample(ArmClient client)
         {
-            var rgName = SdkContext.RandomResourceName("rgRSAT", 24);
-            var deploymentName = SdkContext.RandomResourceName("dpRSAT", 24);
-
+            var rgName = "rgRSAT"; // change the value here for your own resource group name
+            var deploymentName = "dpRSAT"; // change the value here for your own arm deployment name
             try
             {
-                var templateJson = Utilities.GetArmTemplate("ArmTemplate.json");
-
                 //=============================================================
                 // Create resource group.
+                Console.WriteLine($"Creating a resource group with name: {rgName}");
 
-                Utilities.Log("Creating a resource group with name: " + rgName);
+                var subscription = await client.GetDefaultSubscriptionAsync();
+                var rgLro = await subscription.GetResourceGroups().CreateOrUpdateAsync(WaitUntil.Completed, rgName, new ResourceGroupData(AzureLocation.WestUS));
+                var resourceGroup = rgLro.Value;
+                _resourceGroupId = resourceGroup.Id;
 
-                azure.ResourceGroups.Define(rgName)
-                    .WithRegion(Region.USWest)
-                    .Create();
-
-                Utilities.Log("Created a resource group with name: " + rgName);
-
+                Console.WriteLine($"Created a resource group: {_resourceGroupId}");
                 //=============================================================
                 // Create a deployment for an Azure App Service via an ARM
                 // template.
 
-                Utilities.Log("Starting a deployment for an Azure App Service: " + deploymentName);
+                Console.WriteLine($"Starting a deployment for an Azure App Service: {deploymentName}");
 
-                azure.Deployments.Define(deploymentName)
-                    .WithExistingResourceGroup(rgName)
-                    .WithTemplate(templateJson)
-                    .WithParameters("{}")
-                    .WithMode(DeploymentMode.Incremental)
-                    .Create();
+                // tweak the values here to customize your web app
+                var hostingPlanName = "hpRSAT";
+                var webAppName = "wnRSAT";
+                var webSkuName = "B1";
+                var webSkuCapacity = 1;
+                var templateContent = File.ReadAllText(Path.Combine(".", "Asset", "ArmTemplate.json")).TrimEnd();
+                var deploymentContent = new ArmDeploymentContent(new ArmDeploymentProperties(ArmDeploymentMode.Incremental)
+                {
+                    Template = BinaryData.FromString(templateContent),
+                    Parameters = BinaryData.FromObjectAsJson(new
+                    {
+                        hostingPlanName = new
+                        {
+                            value = hostingPlanName
+                        },
+                        webSiteName = new
+                        {
+                            value = webAppName
+                        },
+                        skuName = new
+                        {
+                            value = webSkuName
+                        },
+                        skuCapacity = new
+                        {
+                            value = webSkuCapacity
+                        },
+                    })
+                });
+                // we do not need the response of this deployment, therefore we just wait the deployment to complete here and discard the response.
+                await resourceGroup.GetArmDeployments().CreateOrUpdateAsync(WaitUntil.Completed, deploymentName, deploymentContent);
 
-                Utilities.Log("Completed the deployment: " + deploymentName);
+                Console.WriteLine($"Completed the deployment: {deploymentName}");
             }
             finally
             {
                 try
                 {
-                    Utilities.Log("Deleting Resource Group: " + rgName);
-                    azure.ResourceGroups.DeleteByName(rgName);
-                    Utilities.Log("Deleted Resource Group: " + rgName);
+                    if (_resourceGroupId is not null)
+                    {
+                        Console.WriteLine($"Deleting Resource Group: {_resourceGroupId}");
+                        await client.GetResourceGroupResource(_resourceGroupId).DeleteAsync(WaitUntil.Completed);
+                        Console.WriteLine($"Deleted Resource Group: {_resourceGroupId}");
+                    }
                 }
                 catch (Exception ex)
                 {
-                    Utilities.Log(ex);
+                    Console.WriteLine(ex);
                 }
             }
         }
 
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             try
             {
                 //=================================================================
                 // Authenticate
-                var credentials = SdkContext.AzureCredentialsFactory.FromFile(Environment.GetEnvironmentVariable("AZURE_AUTH_LOCATION"));
+                var credential = new DefaultAzureCredential();
 
-                var azure = Azure
-                    .Configure()
-                    .WithLogLevel(HttpLoggingDelegatingHandler.Level.Basic)
-                    .Authenticate(credentials)
-                    .WithDefaultSubscription();
+                var subscriptionId = Environment.GetEnvironmentVariable("AZURE_SUBSCRIPTION_ID");
+                // you can also use `new ArmClient(credential)` here, and the default subscription will be the first subscription in your list of subscription
+                var client = new ArmClient(credential, subscriptionId);
 
-                RunSample(azure);
+                await RunSample(client);
             }
             catch (Exception ex)
             {
-                Utilities.Log(ex);
+                Console.WriteLine(ex);
             }
         }
     }
